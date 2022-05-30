@@ -1,17 +1,21 @@
-﻿using System.Collections.Concurrent;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using WebApplication7.Models;
 
 namespace WebApplication7.Controllers;
 
 public class CatalogController : Controller
 {
-    private static ConcurrentBag<Product> _catalog = new();
+    private readonly ICatalog _catalog;
+
+    public CatalogController(ICatalog catalog)
+    {
+        _catalog = catalog;
+    }
     
     [HttpPost]
     public IActionResult ProductAdding([FromForm] Product product)
     {
-        _catalog.Add(product);
+        _catalog.AddProduct(product);
         return View(_catalog);
     }
     

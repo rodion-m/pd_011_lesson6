@@ -1,4 +1,8 @@
+using WebApplication7.Models;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton<ICatalog, InMemoryCatalog>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

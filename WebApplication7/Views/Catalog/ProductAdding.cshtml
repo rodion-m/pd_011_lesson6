@@ -1,10 +1,10 @@
-﻿@model System.Collections.Concurrent.ConcurrentBag<Product>
+﻿@model InMemoryCatalog
 
 @{
 	ViewData["Title"] = "Добавление товара";
 }
 
-@foreach (var p in Model)
+@foreach (var p in Model.GetProducts())
 {
 	<div> @p.Name @p.Price.ToString("C") </div>
 }
