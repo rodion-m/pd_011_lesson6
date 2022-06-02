@@ -1,8 +1,12 @@
-using WebApplication7.Models;
+using RazorPagesPD011.BackgroundServices;
+using RazorPagesPD011.Models;
+using RazorPagesPD011.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<ICatalog, InMemoryCatalog>();
+builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
+builder.Services.AddHostedService<ServerStartingNotifier>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
