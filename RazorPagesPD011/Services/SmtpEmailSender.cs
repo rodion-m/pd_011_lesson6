@@ -1,32 +1,56 @@
 ﻿using System.Net;
 using System.Net.Mail;
+using Microsoft.Extensions.Options;
 using RazorPagesPD011.Models;
 
 namespace RazorPagesPD011.Services;
 
 public class SmtpEmailSender : IEmailSender
 {
-    private SmtpClient _smtpClient;
+    private readonly ILogger<SmtpEmailSender> _logger;
+    private readonly SmtpCredentials _smtpCredentials;
 
-    public SmtpEmailSender()
+    public SmtpEmailSender(
+        IOptions<SmtpCredentials> options, 
+        ILogger<SmtpEmailSender> logger)
     {
-        _smtpClient = new SmtpClient("smtp.beget.com")
-        {
-            Port = 25,
-            Credentials = new NetworkCredential(
-                "asp2022_5@rodion-m.ru",
-                "J8S*U*b&"
-            ),
-        };
+        _logger = logger;
+        _smtpCredentials = options.Value;
     }
 
-    public void Send(string senderEmail, string title, string body, string recipient)
+    public async Task Send(string senderEmail, string title, string body, string recipient,
+        CancellationToken cancellationToken)
     {
-        _smtpClient.Send(
+        if (senderEmail == null) throw new ArgumentNullException(nameof(senderEmail));
+        if (title == null) throw new ArgumentNullException(nameof(title));
+        if (body == null) throw new ArgumentNullException(nameof(body));
+        if (recipient == null) throw new ArgumentNullException(nameof(recipient));
+        
+        _logger.LogDebug("Пытаемся отправить письмо");
+        
+        var smtpClient = new SmtpClient(_smtpCredentials.Host) //"smtp.beget.com"
+        {
+            Port = _smtpCredentials.Port, //25
+            Credentials = new NetworkCredential(
+                _smtpCredentials.UserName, 
+                _smtpCredentials.Password
+            ),
+        };
+        
+        await smtpClient.SendMailAsync(
             recipients: recipient,
             body: body,
             subject: title,
-            from: senderEmail
+            from: senderEmail,
+            cancellationToken: cancellationToken
         );
     }
+}
+
+public class SmtpCredentials
+{
+    public string? UserName { get; set; } = "asds@gmail.com";
+    public string? Password { get; set; }
+    public string? Host { get; set; }
+    public int Port { get; set; }
 }

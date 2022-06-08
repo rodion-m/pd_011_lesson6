@@ -1,15 +1,13 @@
-﻿using System.Collections.Concurrent;
-
-namespace RazorPagesPD011.Models;
+﻿namespace RazorPagesPD011.Models;
 
 public class InMemoryCatalog : ICatalog
 {
-    private ConcurrentBag<Product> _products = new();
+    private readonly List<Product> _products = new();
     
 
     public List<Product> GetProducts()
     {
-        return _products.ToList();
+        return _products;
     }
 
     public void AddProduct(Product product)

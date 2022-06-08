@@ -1,6 +1,10 @@
-﻿namespace RazorPagesPD011.Models;
+﻿using System.Net.Mail;
+
+namespace RazorPagesPD011.Models;
 
 public interface IEmailSender
 {
-    void Send(string senderEmail, string title, string body, string recipient);
+    public Task Send(string senderEmail, string title, string body, string recipient,
+        CancellationToken cancellationToken);
 }
+

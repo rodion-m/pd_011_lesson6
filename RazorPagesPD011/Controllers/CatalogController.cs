@@ -3,7 +3,7 @@ using RazorPagesPD011.Models;
 
 namespace RazorPagesPD011.Controllers;
 
-public class CatalogController : Controller
+public sealed class CatalogController : Controller
 {
     private readonly ICatalog _catalog;
 
@@ -13,9 +13,9 @@ public class CatalogController : Controller
     }
     
     [HttpPost]
-    public IActionResult ProductAdding([FromForm] Product product)
+    public IActionResult ProductAdding([FromForm] Product type)
     {
-        _catalog.AddProduct(product);
+        _catalog.AddProduct(type);
         return View(_catalog);
     }
     
@@ -24,4 +24,6 @@ public class CatalogController : Controller
     {
         return View(_catalog);
     }
+
+
 }
