@@ -3,6 +3,7 @@ using RazorPagesPD011.BackgroundServices;
 using RazorPagesPD011.Controllers;
 using RazorPagesPD011.Models;
 using RazorPagesPD011.Services;
+using Serilog;
 
 Console.OutputEncoding = Encoding.UTF8;
 
@@ -16,6 +17,7 @@ builder.Services.AddHostedService<ServerStartingNotifier>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Host.UseSerilog((_, conf) => conf.WriteTo.Console());
 
 var app = builder.Build();
 
@@ -29,6 +31,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+//app.UseSerilogRequestLogging();
 
 app.UseRouting();
 

@@ -26,7 +26,7 @@ public class SmtpEmailSender : IEmailSender
         if (body == null) throw new ArgumentNullException(nameof(body));
         if (recipient == null) throw new ArgumentNullException(nameof(recipient));
         
-        _logger.LogDebug("Пытаемся отправить письмо");
+        _logger.LogDebug($"{DateTime.Now} Пытаемся отправить письмо");
         
         var smtpClient = new SmtpClient(_smtpCredentials.Host) //"smtp.beget.com"
         {

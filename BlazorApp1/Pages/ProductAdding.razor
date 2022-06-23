@@ -1,0 +1,59 @@
+﻿@page "/ProductAdding"
+
+@using System.ComponentModel.DataAnnotations
+@using BlazorApp1.Data
+@using BlazorApp1.Entities
+
+@inject AppDbContext DbContext;
+@inject ILogger<ProductAdding> Logger;
+
+<h3>Добавление товара</h3>
+
+<EditForm Model="_model" OnValidSubmit="AddProduct">
+	<DataAnnotationsValidator />
+	Название: <InputText class="form-control" @bind-Value="_model.Name"></InputText>
+	<br/>
+	Цена: <InputNumber @bind-Value="_model.Price"></InputNumber>
+	<ValidationSummary />
+	<input type="submit" value="Добавить" />
+</EditForm>
+<div>@_message</div>
+
+@code {
+	public const string Href = "/ProductAdding";
+	
+	private ProductAddingModel _model = new ProductAddingModel();
+	private string _message = "";
+
+	private class ProductAddingModel
+	{
+		[MinLength(3)]
+		[RegularExpression(@"[А-Яа-я\w ]+", //https://regexr.com/
+			ErrorMessage = "Имя не должно содержать спецсимволы")]
+		public string Name { get; set; } = "";
+		
+		[Range(0, 1_000_000_000)]
+		public double Price { get; set; }
+	}
+
+	private async Task AddProduct()
+	{
+		_message = "Adding product...";
+		await Task.Yield();
+		var product = new Product(Guid.NewGuid(), _model.Name, (decimal) _model.Price);
+		await DbContext.Products.AddAsync(product);
+		await DbContext.SaveChangesAsync();
+		_message = "Product is added";
+	}
+
+	private void PrintThreadingInfo()
+	{
+		Logger.LogWarning(Environment.CurrentManagedThreadId.ToString());
+		// Logger.LogWarning("PendingWorkItemCount: {PendingWorkItemCount}, CompletedWorkItemCount: {CompletedWorkItemCount}",
+		// 	ThreadPool.PendingWorkItemCount,
+		// 	ThreadPool.CompletedWorkItemCount);
+		// ThreadPool.GetAvailableThreads(out var w, out var portThreads);
+		// Logger.LogWarning("worker: {W}, ports: {Ports}", w, portThreads);
+	}
+
+}

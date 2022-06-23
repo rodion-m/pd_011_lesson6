@@ -9,6 +9,7 @@ public sealed class CatalogController : Controller
 
     public CatalogController(ICatalog catalog)
     {
+        ArgumentNullException.ThrowIfNull(catalog); //.NET 6+
         _catalog = catalog;
     }
     

@@ -1,0 +1,79 @@
+﻿@page "/ProductsList"
+
+@using BlazorApp1.Data
+@using BlazorApp1.Entities
+@using Microsoft.EntityFrameworkCore
+
+@inject AppDbContext DbContext
+
+<h3>Список товаров</h3>
+<table class="table">
+	<thead>
+	<tr>
+		<th>Название</th><th>Цена</th><th>Действие</th>
+	</tr>
+	</thead>
+	<tbody>
+	@foreach (var prod in _products)
+	{
+		<tr>
+			<td>@prod.Name</td><td>@prod.Price.ToString("C")</td>
+			<th>
+				<button class="btn btn-primary" @onclick="() => AddToCart(prod)">В корзину</button>
+			</th>
+		</tr>
+	}
+	</tbody>
+</table>
+<div>@_message</div>
+
+@code {
+	private List<Product> _products = new();
+	private string _message = "";
+
+	protected override async Task OnInitializedAsync()
+	{
+		await base.OnInitializedAsync();
+		await LoadProducts();
+	}
+
+	private async Task LoadProducts()
+	{
+		_products = await DbContext.Products.ToListAsync();
+	}
+
+	private async Task AddToCart(Product product)
+	{
+		Cart? cart = await DbContext.Carts
+			.Include(it => it.Items)
+			.FirstOrDefaultAsync(it => it.UserId == User.TestUser.Id);
+		if (cart is null)
+		{
+			await DbContext.Carts.AddAsync(new Cart()
+			{
+				Id = Guid.NewGuid(),
+				UserId = User.TestUser.Id,
+				Items = new List<CartItem>()
+			});
+			await DbContext.SaveChangesAsync();
+		}
+		cart = await DbContext.Carts
+			.Include(it => it.Items)
+			.FirstAsync(it => it.UserId == User.TestUser.Id);
+
+		cart.Items.Add(new CartItem()
+		{
+			Id = Guid.NewGuid(), 
+			ProductId = product.Id, 
+			Quantity = 1d
+		});
+		await DbContext.SaveChangesAsync();
+
+		// cart = await DbContext.Carts
+		// 	.Include(it => it.Items)
+		// 	.FirstAsync(it => it.UserId == User.TestUser.Id);
+
+		_message = $"Товар {product.Name} добавлен в корзину";
+	}
+
+}
