@@ -12,4 +12,15 @@ public class AppDbContext : DbContext
         : base(options)
     {
     }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<CartItem>(action =>
+        {
+            action.HasOne(dto => dto.Cart)
+                .WithMany(dto => dto.Items)
+                .IsRequired();
+        });
+    }
 }

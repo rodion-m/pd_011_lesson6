@@ -46,33 +46,45 @@
 	{
 		Cart? cart = await DbContext.Carts
 			.Include(it => it.Items)
-			.FirstOrDefaultAsync(it => it.UserId == User.TestUser.Id);
+			.FirstOrDefaultAsync(it => it.UserId == User.CurrentUser.Id);
 		if (cart is null)
 		{
 			await DbContext.Carts.AddAsync(new Cart()
 			{
-				Id = Guid.NewGuid(),
-				UserId = User.TestUser.Id,
+				Id = Guid.Empty,
+				UserId = User.CurrentUser.Id,
 				Items = new List<CartItem>()
 			});
-			await DbContext.SaveChangesAsync();
+			//await DbContext.SaveChangesAsync();
 		}
 		cart = await DbContext.Carts
 			.Include(it => it.Items)
-			.FirstAsync(it => it.UserId == User.TestUser.Id);
+			.FirstOrDefaultAsync(it => it.UserId == User.CurrentUser.Id);
 
-		cart.Items.Add(new CartItem()
+		if (cart is null)
 		{
-			Id = Guid.NewGuid(), 
-			ProductId = product.Id, 
-			Quantity = 1d
-		});
+			cart = DbContext.Carts
+				.Local
+				.First(it => it.UserId == User.CurrentUser.Id);
+		}
+
+		CartItem? cartItem = cart.Items
+			.FirstOrDefault(cartItem => cartItem.ProductId == product.Id);
+		if (cartItem is not null)
+		{
+			cartItem.Quantity++;
+		}
+		else
+		{
+			cart.Items.Add(new CartItem()
+			{
+				Id = Guid.Empty,
+				ProductId = product.Id,
+				Quantity = 1d
+			});
+		}
+
 		await DbContext.SaveChangesAsync();
-
-		// cart = await DbContext.Carts
-		// 	.Include(it => it.Items)
-		// 	.FirstAsync(it => it.UserId == User.TestUser.Id);
-
 		_message = $"Товар {product.Name} добавлен в корзину";
 	}
 

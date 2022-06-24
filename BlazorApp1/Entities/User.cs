@@ -2,7 +2,7 @@
 
 public class User
 {
-    public static User TestUser = new User()
+    public static User CurrentUser = new User()
     {
         Id = new Guid("E8EF2B13-1291-4346-AA44-BDAD9DF218F4")
     };
