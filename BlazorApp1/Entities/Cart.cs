@@ -13,5 +13,11 @@ public class CartItem
     public Guid ProductId { get; set; }
     public double Quantity { get; set; }
     
+    public Product? Product { get; set; }
     public Cart Cart { get; set; } = null!;
+
+    public override string ToString()
+    {
+        return $"Product: {Product}, Quantity: {Quantity}";
+    }
 }

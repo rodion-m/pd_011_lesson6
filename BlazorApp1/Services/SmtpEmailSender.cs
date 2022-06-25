@@ -1,9 +1,7 @@
 ﻿using System.Net;
 using System.Net.Mail;
 using Microsoft.Extensions.Options;
-using RazorPagesPD011.Models;
-
-namespace RazorPagesPD011.Services;
+namespace BlazorApp1.Services;
 
 public class SmtpEmailSender : IEmailSender
 {

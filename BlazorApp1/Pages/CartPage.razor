@@ -1,28 +1,63 @@
 ﻿@page "/CartPage"
 @using BlazorApp1.Data
 @using BlazorApp1.Entities
+@using BlazorApp1.Services
 @using Microsoft.EntityFrameworkCore
 
 @inject AppDbContext DbContext
+@inject IEmailSender EmailSender
 
 <h3>Корзина</h3>
 
-@foreach (var (cartItem, product) in _cartProducts)
+@foreach (CartItem cartItem in _cart.Items)
 {
 	<div>
-		@product.Name @product.Price @cartItem.Quantity
+		@cartItem.Product!.Name @cartItem.Product!.Price @cartItem.Quantity
 	</div>
 }
+
+<button class="btn btn-primary" @onclick="OfferOrder">
+	Оформить
+</button>
+@* Здесь может быть EditForm с данными заказчика (пример в ProductAdding.razor) *@
 
 @code {
 	private Cart _cart = null!;
 
-	private List<(CartItem cartItem, Product product)> _cartProducts = new();
+	private List<CartItemAndProduct> _cartProducts = new();
+
+	private record CartItemAndProduct(CartItem cartItem, Product product);
 
 	protected override async Task OnInitializedAsync()
 	{
 		await base.OnInitializedAsync();
-		
+		await LoadCart();
+		//await LoadCartUsingExplicitJoin();
+	}
+
+	private async Task LoadCartUsingExplicitJoin()
+	{
+		var query =
+			from cart in DbContext.Carts
+			from item in cart.Items
+			join product in DbContext.Products
+				on item.ProductId equals product.Id
+			where cart.UserId == User.CurrentUser.Id
+			select new CartItemAndProduct(item, product);
+
+		_cartProducts = await query.ToListAsync();
+	}
+
+	private async Task LoadCart()
+	{
+		_cart = await DbContext.Carts
+			.Include(it => it.Items)
+			.ThenInclude(it => it.Product)
+			.FirstAsync(cart => cart.UserId == User.CurrentUser.Id);
+	}
+
+	private async Task LoadCartExhaustive()
+	{
 		_cart = await DbContext.Carts
 			.Include(it => it.Items)
 			.FirstAsync(
@@ -30,16 +65,27 @@
 
 		var productsIds = _cart.Items
 			.Select(item => item.ProductId).ToList();
-		
+
 		var products = await DbContext.Products
 			.Where(prod => productsIds.Contains(prod.Id))
 			.ToListAsync();
 
 		_cartProducts = _cart.Items.Join(
-			products, 
+			products,
 			item => item.ProductId,
 			product => product.Id,
-			(item, product) => (item, product)
+			(item, product) => new CartItemAndProduct(item, product)
 		).ToList();
 	}
+
+	private async Task OfferOrder()
+	{
+		var message = string.Join(Environment.NewLine, _cart.Items);
+		await EmailSender.Send(
+			"asp2022pd0112@rodion-m.ru", 
+			"Новый заказ", 
+			message, 
+			"income@rodion-m.ru");
+	}
+
 }
